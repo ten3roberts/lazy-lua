@@ -21,6 +21,14 @@ function Iterator.ipairs(table)
     return GenericIterator:new(ipairs(table))
 end
 
+--- Fully consumes and evaluates iterator, discarding the result
+--- Useful when an iterator has a side effect and it is needed to be run
+function Iterator:consume()
+    while true do
+        if self:next() == nil then break end
+    end
+end
+
 --- Alias for :next to allow for loop integration
 function Iterator:__call()
     return self:next()
@@ -61,8 +69,7 @@ local RangeIterator = {}
 -- If end is nil, range is infinite
 -- An optional step can be defined as a third argument
 function RangeIterator:new(start, stop, step)
-    local o = setmetatable({cur=start, stop=stop, step=step or 1}, self)
-    return o
+    return setmetatable({cur=start, stop=stop, step=step or 1}, self)
 end
 
 function RangeIterator:next()
@@ -75,8 +82,7 @@ function RangeIterator:next()
 end
 
 function GenericIterator:new(func, state, init)
-    local o = setmetatable({alive=true, func=func, state=state, prev=init}, self)
-    return o
+    return setmetatable({alive=true, func=func, state=state, prev=init}, self)
 end
 
 function GenericIterator:next()
@@ -91,8 +97,7 @@ end
 local ListIterator = {}
 
 function ListIterator:new(list)
-    local o = setmetatable({index=1, list=list}, self)
-    return o
+    return setmetatable({index=1, list=list}, self)
 end
 
 function ListIterator:next()
@@ -107,8 +112,7 @@ end
 local MapIterator = {}
 
 function MapIterator:new(iter, func)
-    local o = setmetatable({iter=iter, func=func}, self)
-    return o
+    return setmetatable({iter=iter, func=func}, self)
 end
 
 function MapIterator:next()
@@ -124,8 +128,7 @@ end
 local FilterIterator = {}
 
 function FilterIterator:new(iter, pred)
-    local o = setmetatable({iter=iter, pred=pred}, self)
-    return o
+    return setmetatable({iter=iter, pred=pred}, self)
 end
 
 function FilterIterator:next()
@@ -140,12 +143,41 @@ function FilterIterator:next()
 
 end
 
+local TakeIterator = {}
+
+function TakeIterator:new(iter, n)
+    return setmetatable({iter=iter, n=n}, self)
+end
+
+function TakeIterator:next()
+    if self.n == 0 then return nil end
+
+    self.n = self.n - 1
+    return self.iter:next()
+end
+
+local EachIterator = {}
+
+function EachIterator:new(iter, func)
+    return setmetatable({iter=iter, func=func}, self)
+end
+
+function EachIterator:next()
+    local next = table.pack(self.iter:next())
+    if #next == 0 then return nil end
+
+    self.func(table.unpack(next))
+
+    return table.unpack(next)
+end
 
 Iterator:define("from", GenericIterator)
 Iterator:define("range", RangeIterator)
 Iterator:define("list", ListIterator)
 Iterator:define("map", MapIterator)
 Iterator:define("filter", FilterIterator)
+Iterator:define("take", TakeIterator)
+Iterator:define("each", EachIterator)
 
 return Iterator
 
