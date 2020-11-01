@@ -7,9 +7,14 @@ Custom iterators can also be created and chained with the already existing ones
 The iterators are lazy and do not evaluate until required. This means they work on infinite sequences and long lists without allocation.
 
 ## Usage
-### Iterating a table
+### Installation
+Copy [lazy.lua](https://github.com/ten3roberts/lazy-lua/blob/master/lazy.lua) into your project and require it by:
 ```lua
 Iterator = require "lazy"
+```
+The module returns the base iterator containing all functionality
+### Iterating a table
+```lua
 local table = {a=2,b=5,c=3}
 local iterator = Iterator.table(table)
 
@@ -20,7 +25,6 @@ end
 ```
 ### Chaining with Map
 ```lua
-Iterator = require "lazy"
 local table = {a=2,b=5,c=3}
 local iterator = Iterator.table(table):map(function(k,v) return k,v*v end)
 
@@ -101,3 +105,6 @@ for val in Iterator.range(1):scan(0, function(state, v) return state + v end) do
 end
 
 ```
+
+## License
+This module is free software and licensed under the MIT license. The license is included in the repository and the `lazy.lua` file, so it can be copied on its own
